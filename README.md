@@ -69,7 +69,7 @@ Aplicación web desarrollada en **Python/Flask** para el control de asistencia d
 Requisitos: Python 3.10+
 
 ```bash
-git clone https://github.com/orgeforero-dev/control-asistencia-geocerca.git
+git clone https://github.com/Jorgeforero-dev/control-asistencia-geocerca.git
 cd control-asistencia-geocerca
 python -m venv venv
 venv\Scripts\activate        # Windows  (Linux/macOS: source venv/bin/activate)
