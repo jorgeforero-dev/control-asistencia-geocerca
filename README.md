@@ -69,7 +69,7 @@ Aplicación web desarrollada en **Python/Flask** para el control de asistencia d
 Requisitos: Python 3.10+
 
 ```bash
-git clone https://github.com/jorge03148/control-asistencia-geocerca.git
+git clone https://github.com/orgeforero-dev/control-asistencia-geocerca.git
 cd control-asistencia-geocerca
 python -m venv venv
 venv\Scripts\activate        # Windows  (Linux/macOS: source venv/bin/activate)
@@ -94,4 +94,4 @@ El cálculo de horas implementa la jornada laboral colombiana parametrizable: to
 **Jorge Luis Forero Herrera** — Coordinador HSEQ/SST · Psicólogo · Desarrollador
 Especialista en integrar gestión de seguridad y salud en el trabajo con automatización y análisis de datos (Python, Power BI, SQL).
 
-[LinkedIn](https://www.linkedin.com/in/TU_PERFIL) · Bogotá, Colombia
+[LinkedIn](https://www.linkedin.com/in/jorge-luis-forero-herrera-2448aa159/) · Bogotá, Colombia
