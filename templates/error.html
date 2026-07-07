@@ -1,0 +1,17 @@
+{# =========================================================== #}
+{# Plantilla: error.html                                        #}
+{# Función: Página genérica para errores 403 y 404.             #}
+{# Variables: codigo (int), mensaje (str).                     #}
+{# =========================================================== #}
+{% extends "base.html" %}
+{% block titulo %}Error {{ codigo }}{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+  <section class="tarjeta" style="text-align:center;padding:3rem 1.2rem;">
+    <h1 style="font-size:3rem;color:var(--color-acento);">{{ codigo }}</h1>
+    <p class="tenue">{{ mensaje }}</p>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn--acento mt-1">Volver al inicio</a>
+  </section>
+</main>
+{% endblock %}

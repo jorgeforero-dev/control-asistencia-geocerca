@@ -1,0 +1,9 @@
+Coloque aquí 3 capturas de pantalla del sistema corriendo en local
+(con DATOS DE PRUEBA, nunca trabajadores reales):
+
+  kiosko.png     -> pantalla del kiosko de marcación
+  dashboard.png  -> dashboard con concentración por estación
+  reportes.png   -> módulo de reportes de horas
+
+El README.md principal ya las referencia con esos nombres exactos.
+Luego: git add docs && git commit -m "Agregar capturas" && git push

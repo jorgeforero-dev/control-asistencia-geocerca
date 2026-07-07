@@ -1,0 +1,67 @@
+{# =========================================================== #}
+{# Plantilla: perfil.html                                       #}
+{# Función: Datos del usuario en sesión y cambio de contraseña. #}
+{# Variables: usuario = dict.                                   #}
+{# =========================================================== #}
+{% extends "base.html" %}
+{% block titulo %}Perfil · Control de Asistencia{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+
+  <!-- ============== Inicio Encabezado ============== -->
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Mi perfil</h1>
+      <p>Datos de la cuenta y seguridad</p>
+    </div>
+  </div>
+  <!-- ============== Fin Encabezado ============== -->
+
+  <div class="rejilla rejilla--2">
+
+    <!-- ============== Inicio Datos del Usuario ============== -->
+    <section class="tarjeta">
+      <h2>Datos</h2>
+      <p><b>Nombre:</b> {{ usuario.nombre }}</p>
+      <p><b>Correo:</b> {{ usuario.correo }}</p>
+      <p><b>Rol:</b> <span class="insignia insignia--ok">{{ usuario.rol }}</span></p>
+      <p class="tenue"><b>Creado:</b> {{ usuario.creado_en }}</p>
+    </section>
+    <!-- ============== Fin Datos del Usuario ============== -->
+
+    <!-- ============== Inicio Cambio de Correo ============== -->
+    <section class="tarjeta">
+      <h2>Cambiar correo</h2>
+      <p class="tenue">Este es el correo con el que inicia sesión.</p>
+      <form method="POST" action="{{ url_for('main.perfil') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <!-- Indica a la ruta que esta acción es de correo -->
+        <input type="hidden" name="accion" value="correo">
+        <div class="campo"><label>Nuevo correo</label>
+          <input type="email" name="correo_nuevo" value="{{ usuario.correo }}" required></div>
+        <button class="btn btn--acento">Actualizar correo</button>
+      </form>
+    </section>
+    <!-- ============== Fin Cambio de Correo ============== -->
+
+    <!-- ============== Inicio Cambio de Contraseña ============== -->
+    <section class="tarjeta">
+      <h2>Cambiar contraseña</h2>
+      <form method="POST" action="{{ url_for('main.perfil') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <!-- Indica a la ruta que esta acción es de contraseña -->
+        <input type="hidden" name="accion" value="password">
+        <div class="campo"><label>Nueva contraseña</label>
+          <input type="password" name="password_nueva" required></div>
+        <div class="campo"><label>Confirmar contraseña</label>
+          <input type="password" name="password_confirma" required></div>
+        <button class="btn btn--acento">Actualizar contraseña</button>
+      </form>
+    </section>
+    <!-- ============== Fin Cambio de Contraseña ============== -->
+
+  </div>
+
+</main>
+{% endblock %}

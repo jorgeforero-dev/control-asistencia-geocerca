@@ -1,0 +1,11 @@
+# ===========================================================
+# Dependencias del Sistema de Control de Asistencia
+# Instalación:  pip install -r requirements.txt
+# ===========================================================
+
+Flask==3.0.3            # Framework web principal
+Werkzeug==3.0.3         # Utilidades WSGI y hash de contraseñas (incluido con Flask)
+openpyxl==3.1.5         # Lectura/escritura de archivos Excel (.xlsx)
+python-dotenv==1.0.1    # Carga de variables de entorno desde archivo .env
+Flask-WTF==1.2.1        # Protección CSRF en formularios
+waitress==3.0.2         # Servidor de producción (Windows y Linux)

@@ -1,0 +1,138 @@
+{# =========================================================== #}
+{# Plantilla: dashboard.html                                    #}
+{# Función: Panel principal con indicadores del día.            #}
+{# Variables recibidas: ind = { trabajadores_activos,           #}
+{#   presentes_hoy, registros_hoy, fecha }                      #}
+{# =========================================================== #}
+{% extends "base.html" %}
+
+{% block titulo %}Dashboard · Control de Asistencia{% endblock %}
+
+{# CSS adicional con los estilos de KPIs #}
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+
+  <!-- ============== Inicio Encabezado ============== -->
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Hola, {{ session.get('nombre') }}</h1>
+      <p>Resumen del día {{ ind.fecha }}</p>
+    </div>
+    <a href="{{ url_for('asistencia.panel') }}" class="btn btn--acento">Ir a marcaje</a>
+  </div>
+  <!-- ============== Fin Encabezado ============== -->
+
+  <!-- ============== Inicio Indicadores (KPIs) ============== -->
+  <section class="rejilla rejilla--3">
+    <div class="tarjeta kpi kpi--azul">
+      <span class="kpi__valor">{{ ind.trabajadores_activos }}</span>
+      <span class="kpi__etiqueta">Trabajadores activos</span>
+    </div>
+    <div class="tarjeta kpi kpi--verde">
+      <span class="kpi__valor">{{ ind.presentes_hoy }}</span>
+      <span class="kpi__etiqueta">Presentes hoy</span>
+    </div>
+    <div class="tarjeta kpi">
+      <span class="kpi__valor">{{ ind.registros_hoy|length }}</span>
+      <span class="kpi__etiqueta">Marcajes hoy</span>
+    </div>
+  </section>
+  <!-- ============== Fin Indicadores ============== -->
+
+  <!-- ============== Inicio Concentración por Estación ============== -->
+  <section class="tarjeta mt-2">
+    <div class="flex-entre">
+      <div>
+        <h2>Concentración por estación</h2>
+        <p class="tenue">Dónde está la gente y dónde se registran los marcajes.</p>
+      </div>
+      <div class="flex" style="align-items:flex-end;">
+        <!-- Selector de rango de fechas (GET para que quede en la URL) -->
+        <form method="GET" action="{{ url_for('main.dashboard') }}" class="flex">
+          <div class="campo campo--mini">
+            <label>Desde</label>
+            <input type="date" name="inicio" value="{{ ind.rango_inicio }}">
+          </div>
+          <div class="campo campo--mini">
+            <label>Hasta</label>
+            <input type="date" name="fin" value="{{ ind.rango_fin }}">
+          </div>
+          <button class="btn btn--claro btn--mini" style="align-self:flex-end;">Ver</button>
+        </form>
+        <!-- Exportar a Excel respetando el rango actual -->
+        <a href="{{ url_for('main.exportar_concentracion', inicio=ind.rango_inicio, fin=ind.rango_fin) }}"
+           class="btn btn--acento btn--mini" style="align-self:flex-end;">Exportar a Excel</a>
+      </div>
+    </div>
+
+    <div class="tabla--envuelta mt-1">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Estación / Sitio</th>
+            <th class="derecha">Presentes ahora</th>
+            <th class="derecha">Entradas</th>
+            <th class="derecha">Salidas</th>
+            <th class="derecha">Total marcajes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in ind.concentracion %}
+          <tr>
+            <td>{{ s.sitio }}</td>
+            <td class="derecha">
+              {% if s.presentes > 0 %}
+                <span class="insignia insignia--ok">{{ s.presentes }}</span>
+              {% else %}<span class="tenue">0</span>{% endif %}
+            </td>
+            <td class="derecha">{{ s.entradas }}</td>
+            <td class="derecha">{{ s.salidas }}</td>
+            <td class="derecha"><b>{{ s.total }}</b></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="tenue">No hay marcajes en el rango seleccionado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="tenue mt-1">
+      <b>Presentes ahora</b>: entraron y aún no marcan salida (agrupados por
+      la estación donde entraron). El resto son totales de marcajes del rango.
+    </p>
+  </section>
+  <!-- ============== Fin Concentración por Estación ============== -->
+
+  <!-- ============== Inicio Tabla de Marcajes del Día ============== -->
+  <section class="mt-2">
+    <h2>Marcajes de hoy</h2>
+    <div class="tabla--envuelta">
+      <table class="tabla">
+        <thead>
+          <tr><th>Documento</th><th>Trabajador</th><th>Entrada</th><th>Salida</th></tr>
+        </thead>
+        <tbody>
+          {% for r in ind.registros_hoy %}
+          <tr>
+            <td>{{ r.documento }}</td>
+            <td>{{ r.nombres }} {{ r.apellidos }}</td>
+            <td>{{ r.hora_entrada or '—' }}</td>
+            <td>
+              {% if r.hora_salida %}{{ r.hora_salida }}
+              {% else %}<span class="insignia insignia--info">En jornada</span>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="tenue">Aún no hay marcajes registrados hoy.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <!-- ============== Fin Tabla de Marcajes del Día ============== -->
+
+</main>
+{% endblock %}

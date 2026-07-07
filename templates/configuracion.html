@@ -1,0 +1,238 @@
+{# =========================================================== #}
+{# Plantilla: configuracion.html                                #}
+{# Función: Panel del administrador. Permite modificar TODOS    #}
+{#          los parámetros laborales, festivos y turnos sin     #}
+{#          tocar el código fuente.                             #}
+{# Variables: config (dict), festivos (lista), turnos (lista).  #}
+{# =========================================================== #}
+{% extends "base.html" %}
+{% block titulo %}Configuración · Control de Asistencia{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+
+  <!-- ============== Inicio Encabezado ============== -->
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Configuración del sistema</h1>
+      <p>Parámetros laborales bajo legislación colombiana (editables)</p>
+    </div>
+    <!-- Respaldo de base de datos -->
+    <form method="POST" action="{{ url_for('configuracion.backup') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn--claro">Crear respaldo de BD</button>
+    </form>
+  </div>
+  <!-- ============== Fin Encabezado ============== -->
+
+  <!-- ============== Inicio Parámetros Generales ============== -->
+  <section class="tarjeta">
+    <h2>Jornada y recargos</h2>
+    <form method="POST" action="{{ url_for('configuracion.panel') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fila-campos">
+        <div class="campo"><label>Horas ordinarias por semana</label>
+          <input name="horas_semanales" value="{{ config.horas_semanales }}"></div>
+        <div class="campo"><label>Hora inicio jornada</label>
+          <input type="time" name="hora_inicio_jornada" value="{{ config.hora_inicio_jornada }}"></div>
+        <div class="campo"><label>Hora fin jornada</label>
+          <input type="time" name="hora_fin_jornada" value="{{ config.hora_fin_jornada }}"></div>
+        <div class="campo"><label>Minutos de almuerzo</label>
+          <input name="minutos_almuerzo" value="{{ config.minutos_almuerzo }}"></div>
+        <div class="campo"><label>Días laborables (1=Lun … 7=Dom)</label>
+          <input name="dias_laborables" value="{{ config.dias_laborables }}"></div>
+        <div class="campo"><label>Tolerancia (min)</label>
+          <input name="tolerancia_minutos" value="{{ config.tolerancia_minutos }}"></div>
+        <div class="campo"><label>Inicio horario nocturno</label>
+          <input type="time" name="inicio_nocturno" value="{{ config.inicio_nocturno }}"></div>
+        <div class="campo"><label>Fin horario nocturno</label>
+          <input type="time" name="fin_nocturno" value="{{ config.fin_nocturno }}"></div>
+        <div class="campo"><label>Valor hora ordinaria (COP)</label>
+          <input name="valor_hora_ordinaria" value="{{ config.valor_hora_ordinaria }}"></div>
+        <div class="campo"><label>Recargo extra diurna (%)</label>
+          <input name="recargo_extra_diurna" value="{{ config.recargo_extra_diurna }}"></div>
+        <div class="campo"><label>Recargo extra nocturna (%)</label>
+          <input name="recargo_extra_nocturna" value="{{ config.recargo_extra_nocturna }}"></div>
+        <div class="campo"><label>Recargo nocturno (%)</label>
+          <input name="recargo_nocturno" value="{{ config.recargo_nocturno }}"></div>
+        <div class="campo"><label>Recargo dominical/festivo (%)</label>
+          <input name="recargo_dominical" value="{{ config.recargo_dominical }}"></div>
+      </div>
+      <button class="btn btn--acento">Guardar parámetros</button>
+    </form>
+  </section>
+  <!-- ============== Fin Parámetros Generales ============== -->
+
+  <!-- ============== Inicio Reglas de Marcación ============== -->
+  <section class="tarjeta mt-2">
+    <h2>Reglas de marcación</h2>
+    <p class="tenue">
+      Controles globales para el kiosko de los trabajadores. La validación
+      de ubicación se hace contra los sitios de la lista de abajo (el
+      trabajador puede marcar si está dentro de cualquiera de ellos).
+    </p>
+    <form method="POST" action="{{ url_for('configuracion.panel') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fila-campos">
+        <div class="campo"><label>Validar ubicación</label>
+          <select name="validar_ubicacion">
+            <option value="1" {% if config.validar_ubicacion == '1' %}selected{% endif %}>Sí, exigir estar en un sitio</option>
+            <option value="0" {% if config.validar_ubicacion == '0' %}selected{% endif %}>No validar</option>
+          </select></div>
+        <div class="campo"><label>Foto al marcar</label>
+          <select name="exigir_foto">
+            <option value="1" {% if config.exigir_foto == '1' %}selected{% endif %}>Obligatoria</option>
+            <option value="0" {% if config.exigir_foto == '0' %}selected{% endif %}>Opcional</option>
+          </select></div>
+      </div>
+      <button class="btn btn--acento">Guardar reglas</button>
+    </form>
+  </section>
+  <!-- ============== Fin Reglas de Marcación ============== -->
+
+  <!-- ============== Inicio Sitios de Obra ============== -->
+  <section class="tarjeta mt-2">
+    <h2>Sitios de obra (estaciones y patio taller)</h2>
+    <p class="tenue">
+      Los trabajadores pueden marcar si están dentro del radio de cualquiera
+      de estos sitios. <b>Importante:</b> las coordenadas vienen aproximadas;
+      verifica y ajusta cada una. Para obtener la coordenada exacta, abre
+      Google Maps, haz clic derecho sobre el punto y copia el par de números
+      (lat, lon) que aparece arriba; pégalo en el campo de coordenadas.
+    </p>
+
+    <!-- Agregar sitio nuevo -->
+    <form method="POST" action="{{ url_for('configuracion.agregar_sitio') }}" class="mt-1">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fila-campos">
+        <div class="campo"><label>Nombre del sitio</label>
+          <input name="nombre" placeholder="Ej: 18 Acopio Norte" required></div>
+        <div class="campo"><label>Coordenadas (lat, lon)</label>
+          <input name="coordenadas" placeholder="4.6097, -74.0817" required></div>
+        <div class="campo"><label>Radio (m)</label>
+          <input name="radio_m" value="300"></div>
+      </div>
+      <button class="btn btn--claro btn--mini">Agregar sitio</button>
+    </form>
+
+    <!-- Lista de sitios existentes (cada uno editable) -->
+    <div class="tabla--envuelta mt-2">
+      <table class="tabla">
+        <thead>
+          <tr><th>Sitio</th><th>Coordenadas (lat, lon)</th><th>Radio</th><th>Activo</th><th>Mapa</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for s in sitios %}
+          <tr>
+            <td>{{ s.nombre }}</td>
+            <!-- Cada fila es un mini-formulario de actualización -->
+            <td>
+              <form method="POST" action="{{ url_for('configuracion.actualizar_sitio', sid=s.id) }}" id="sitio-{{ s.id }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input name="coordenadas" value="{{ s.latitud }}, {{ s.longitud }}"
+                       style="width:160px;padding:.3rem;border:1px solid var(--color-borde);border-radius:6px;">
+            </td>
+            <td><input name="radio_m" value="{{ s.radio_m }}" form="sitio-{{ s.id }}"
+                       style="width:60px;padding:.3rem;border:1px solid var(--color-borde);border-radius:6px;"></td>
+            <td>
+              <select name="activo" form="sitio-{{ s.id }}" style="padding:.3rem;border:1px solid var(--color-borde);border-radius:6px;">
+                <option value="1" {% if s.activo %}selected{% endif %}>Sí</option>
+                <option value="0" {% if not s.activo %}selected{% endif %}>No</option>
+              </select>
+            </td>
+            <td>
+              <a href="https://www.google.com/maps?q={{ s.latitud }},{{ s.longitud }}"
+                 target="_blank" class="insignia insignia--info">Ver</a>
+            </td>
+            <td class="derecha">
+              <div class="flex">
+                <button class="btn btn--acento btn--mini" form="sitio-{{ s.id }}">Guardar</button>
+                </form>
+                <form method="POST" action="{{ url_for('configuracion.eliminar_sitio', sid=s.id) }}"
+                      data-confirmar="¿Eliminar el sitio {{ s.nombre }}?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn--peligro btn--mini">Quitar</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="tenue">No hay sitios definidos.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <!-- ============== Fin Sitios de Obra ============== -->
+
+  <div class="rejilla rejilla--2 mt-2">
+
+    <!-- ============== Inicio Festivos ============== -->
+    <section class="tarjeta">
+      <h2>Días festivos</h2>
+      <form method="POST" action="{{ url_for('configuracion.agregar_festivo') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="fila-campos">
+          <div class="campo"><label>Fecha</label><input type="date" name="fecha" required></div>
+          <div class="campo"><label>Nombre</label><input name="nombre" placeholder="Ej: Día del Trabajo"></div>
+        </div>
+        <button class="btn btn--claro btn--mini">Agregar festivo</button>
+      </form>
+      <table class="tabla mt-1">
+        <thead><tr><th>Fecha</th><th>Nombre</th><th></th></tr></thead>
+        <tbody>
+          {% for f in festivos %}
+          <tr>
+            <td>{{ f.fecha }}</td><td>{{ f.nombre }}</td>
+            <td class="derecha">
+              <form method="POST" action="{{ url_for('configuracion.eliminar_festivo', fid=f.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn--peligro btn--mini">Quitar</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="tenue">Sin festivos cargados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    <!-- ============== Fin Festivos ============== -->
+
+    <!-- ============== Inicio Turnos ============== -->
+    <section class="tarjeta">
+      <h2>Turnos</h2>
+      <form method="POST" action="{{ url_for('configuracion.agregar_turno') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="fila-campos">
+          <div class="campo"><label>Nombre</label><input name="nombre" placeholder="Ej: Mañana" required></div>
+          <div class="campo"><label>Inicio</label><input type="time" name="hora_inicio" required></div>
+          <div class="campo"><label>Fin</label><input type="time" name="hora_fin" required></div>
+        </div>
+        <button class="btn btn--claro btn--mini">Agregar turno</button>
+      </form>
+      <table class="tabla mt-1">
+        <thead><tr><th>Nombre</th><th>Inicio</th><th>Fin</th><th></th></tr></thead>
+        <tbody>
+          {% for t in turnos %}
+          <tr>
+            <td>{{ t.nombre }}</td><td>{{ t.hora_inicio }}</td><td>{{ t.hora_fin }}</td>
+            <td class="derecha">
+              <form method="POST" action="{{ url_for('configuracion.eliminar_turno', tid=t.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn--peligro btn--mini">Quitar</button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="tenue">Sin turnos definidos.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    <!-- ============== Fin Turnos ============== -->
+
+  </div>
+
+</main>
+{% endblock %}

@@ -1,0 +1,80 @@
+/* ===========================================================
+   Archivo: static/css/kiosko.css
+   Función: Estilos EXCLUSIVOS de la pantalla pública de
+            marcación (kiosko) que ven los trabajadores.
+   =========================================================== */
+
+body { 
+  /* Mantiene el fondo azul base y encima proyecta la imagen con una capa semitransparente blanca */
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.82)), 
+    url('../img/Kiosko Dragon.png');
+  
+  background-size: cover;       /* Cubre toda la pantalla sin deformarse */
+  background-position: center;  /* Centra la ilustración del dragón y el panda */
+  background-repeat: no-repeat; /* Evita que la imagen se duplique como mosaico */
+  background-attachment: fixed; /* Hace que el fondo se quede quieto si hay scroll */
+}
+
+/* -------- Encabezado -------- */
+.kiosko-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 1.2rem; color: #fff;
+}
+.kiosko-top__marca { font-weight: 700; display: flex; align-items: center; gap: .5rem; }
+.kiosko-top__marca .punto {
+  width: 12px; height: 12px; border-radius: 3px; background: var(--color-acento);
+}
+.kiosko-top__admin {
+  color: #9fb4cc; font-size: .85rem;
+  border: 1px solid #2c4a6e; padding: .35rem .7rem; border-radius: 8px;
+}
+.kiosko-top__admin:hover { color: #fff; background: #1d3a5c; }
+
+/* -------- Tarjeta central -------- */
+.kiosko-wrap { display: grid; place-items: center; padding: 1rem; }
+.kiosko-card {
+  width: 100%; max-width: 440px; background: #fff;
+  border-radius: 16px; padding: 1.4rem 1.3rem 1.6rem;
+  box-shadow: 0 18px 50px rgba(0,0,0,.35);
+}
+.kiosko-titulo { font-size: 1.35rem; text-align: center; margin-bottom: .2rem; }
+.kiosko-sub { text-align: center; color: var(--color-tenue); margin: 0 0 1rem; font-size: .9rem; }
+
+/* -------- Reloj -------- */
+.kiosko-reloj {
+  text-align: center; font-size: 2.4rem; font-weight: 800;
+  color: var(--color-primario); letter-spacing: 1px; margin-bottom: 1rem;
+}
+
+/* -------- Cámara -------- */
+.kiosko-camara {
+  position: relative; width: 100%; aspect-ratio: 4/3;
+  background: #11233a; border-radius: 12px; overflow: hidden; margin: .6rem 0;
+}
+.kiosko-camara video,
+.kiosko-camara img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  /* Espejo horizontal para que se vea natural (como un espejo) */
+  transform: scaleX(-1);
+}
+
+/* -------- Estado de ubicación -------- */
+.kiosko-estado {
+  text-align: center; font-size: .9rem; color: var(--color-tenue);
+  margin: .4rem 0 1rem;
+}
+.kiosko-estado span { font-weight: 700; color: var(--color-primario); }
+
+/* -------- Botones -------- */
+.kiosko-botones { display: grid; gap: .6rem; }
+
+/* -------- Resultado -------- */
+.kiosko-resultado {
+  margin-top: 1rem; padding: .9rem 1rem; border-radius: 10px;
+  text-align: center; font-weight: 700; font-size: 1.02rem;
+}
+.kiosko-resultado.ok { background: #E3F4EC; color: #14633e; border: 1px solid #1E8E5A; }
+.kiosko-resultado.error { background: #FBEAE8; color: #8a261b; border: 1px solid #C0392B; }
+
+.oculto { display: none !important; }

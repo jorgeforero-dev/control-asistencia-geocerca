@@ -1,0 +1,87 @@
+{# =========================================================== #}
+{# Plantilla: asistencia.html                                   #}
+{# Función: Pantalla de marcaje de entrada/salida.              #}
+{# Variables: trabajadores, registros_hoy.                      #}
+{# =========================================================== #}
+{% extends "base.html" %}
+{% block titulo %}Asistencia · Control de Asistencia{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+
+  <!-- ============== Inicio Encabezado con Reloj ============== -->
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Marcaje de asistencia</h1>
+      <p>Seleccione un trabajador y registre su entrada o salida</p>
+    </div>
+    <!-- Reloj en vivo (lo actualiza asistencia.js) -->
+    <div class="tarjeta" style="padding:.6rem 1.2rem;">
+      <span class="tenue">Hora del servidor</span>
+      <div id="reloj" style="font-size:1.6rem;font-weight:800;color:var(--color-primario);">--:--:--</div>
+    </div>
+  </div>
+  <!-- ============== Fin Encabezado con Reloj ============== -->
+
+  <!-- ============== Inicio Formulario de Marcaje ============== -->
+  <section class="tarjeta">
+    <form method="POST" action="{{ url_for('asistencia.marcar') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fila-campos">
+        <div class="campo">
+          <label>Trabajador</label>
+          <select name="trabajador_id" required>
+            <option value="">— Seleccione —</option>
+            {% for t in trabajadores %}
+              <option value="{{ t.id }}">{{ t.documento }} · {{ t.nombres }} {{ t.apellidos }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="campo" style="display:flex;align-items:flex-end;">
+          <button type="submit" class="btn btn--acento btn--bloque">Registrar entrada / salida</button>
+        </div>
+      </div>
+      <p class="tenue">El sistema decide automáticamente: si no hay jornada abierta marca <b>entrada</b>; si ya existe, marca <b>salida</b>.</p>
+    </form>
+  </section>
+  <!-- ============== Fin Formulario de Marcaje ============== -->
+
+  <!-- ============== Inicio Registros del Día ============== -->
+  <section class="mt-2">
+    <div class="flex-entre">
+      <h2>Registros de hoy</h2>
+      <input id="buscador" placeholder="Buscar por nombre o documento…"
+             style="max-width:280px;padding:.5rem .7rem;border:1px solid var(--color-borde);border-radius:8px;">
+    </div>
+    <div class="tabla--envuelta mt-1">
+      <table class="tabla" id="tabla-registros">
+        <thead>
+          <tr><th>Documento</th><th>Trabajador</th><th>Entrada</th><th>Salida</th></tr>
+        </thead>
+        <tbody>
+          {% for r in registros_hoy %}
+          <tr>
+            <td>{{ r.documento }}</td>
+            <td>{{ r.nombres }} {{ r.apellidos }}</td>
+            <td>{{ r.hora_entrada or '—' }}</td>
+            <td>
+              {% if r.hora_salida %}{{ r.hora_salida }}
+              {% else %}<span class="insignia insignia--info">En jornada</span>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="tenue">Sin registros hoy.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <!-- ============== Fin Registros del Día ============== -->
+
+</main>
+{% endblock %}
+
+{# JS del módulo de asistencia (reloj + buscador) #}
+{% block js %}
+  <script src="{{ url_for('static', filename='js/asistencia.js') }}"></script>
+{% endblock %}

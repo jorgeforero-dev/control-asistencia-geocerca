@@ -1,0 +1,69 @@
+{# =========================================================== #}
+{# Plantilla: base.html                                         #}
+{# Función: Estructura común a todas las páginas internas.      #}
+{#          Define la barra de navegación, los mensajes flash y #}
+{#          los bloques 'titulo', 'css' y 'contenido' que cada  #}
+{#          página hija rellena. NO contiene CSS ni JS en línea. #}
+{# =========================================================== #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block titulo %}Control de Asistencia{% endblock %}</title>
+
+  <!-- Hoja de estilos global (siempre presente) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <!-- CSS adicional específico de cada página -->
+  {% block css %}{% endblock %}
+</head>
+<body>
+
+  <!-- ============== Inicio Barra de Navegación ============== -->
+  <nav class="nav">
+    <a href="{{ url_for('main.dashboard') }}" class="nav__marca">
+      <span class="punto"></span> Control de Asistencia
+    </a>
+    {% if session.get('usuario_id') %}
+    <div class="nav__links">
+      <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('trabajadores.listar') }}">Trabajadores</a>
+      <a href="{{ url_for('asistencia.panel') }}">Asistencia</a>
+      <a href="{{ url_for('reportes.panel') }}">Reportes</a>
+      {% if session.get('rol') == 'admin' %}
+        <a href="{{ url_for('configuracion.panel') }}">Configuración</a>
+        <a href="{{ url_for('auditoria.panel') }}">Auditoría</a>
+      {% endif %}
+      <a href="{{ url_for('main.perfil') }}">Perfil</a>
+      <a href="{{ url_for('auth.logout') }}">Salir</a>
+    </div>
+    {% endif %}
+  </nav>
+  <!-- ============== Fin Barra de Navegación ============== -->
+
+  <!-- ============== Inicio Mensajes Flash ============== -->
+  <div class="contenedor" style="padding-bottom:0;">
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% for categoria, mensaje in mensajes %}
+        <div class="alerta alerta--{{ categoria }}">{{ mensaje }}</div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+  <!-- ============== Fin Mensajes Flash ============== -->
+
+  <!-- ============== Inicio Contenido de la Página ============== -->
+  {% block contenido %}{% endblock %}
+  <!-- ============== Fin Contenido de la Página ============== -->
+
+  <!-- ============== Inicio Pie de Página ============== -->
+  <footer class="pie">
+    Sistema de Control de Asistencia · Configurado para jornada laboral colombiana (42 h/sem)
+  </footer>
+  <!-- ============== Fin Pie de Página ============== -->
+
+  <!-- JavaScript global (comportamiento de UI) -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <!-- JS adicional específico de cada página -->
+  {% block js %}{% endblock %}
+</body>
+</html>

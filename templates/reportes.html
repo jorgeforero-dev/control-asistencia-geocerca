@@ -1,0 +1,146 @@
+{# =========================================================== #}
+{# Plantilla: reportes.html                                     #}
+{# Función: Filtro por fechas/trabajador, resumen de horas      #}
+{#          (ordinarias, extras, recargos) y exportación Excel. #}
+{# Variables: registros, resumen, trabajadores, f_ini, f_fin,   #}
+{#            trabajador_id.                                     #}
+{# =========================================================== #}
+{% extends "base.html" %}
+{% block titulo %}Reportes · Control de Asistencia{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+
+  <!-- ============== Inicio Encabezado ============== -->
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Reportes de horas</h1>
+      <p>Cálculo de extras sobre la jornada de 42 horas semanales</p>
+    </div>
+  </div>
+  <!-- ============== Fin Encabezado ============== -->
+
+  <!-- ============== Inicio Filtro ============== -->
+  <section class="tarjeta">
+    <form method="POST" action="{{ url_for('reportes.panel') }}" data-validar-fechas>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fila-campos">
+        <div class="campo"><label>Fecha inicial</label><input type="date" name="fecha_inicio" value="{{ f_ini }}"></div>
+        <div class="campo"><label>Fecha final</label><input type="date" name="fecha_fin" value="{{ f_fin }}"></div>
+        <div class="campo">
+          <label>Trabajador (opcional)</label>
+          <select name="trabajador_id">
+            <option value="">Todos</option>
+            {% for t in trabajadores %}
+              <option value="{{ t.id }}" {% if trabajador_id == t.id|string %}selected{% endif %}>
+                {{ t.nombres }} {{ t.apellidos }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="flex">
+        <button type="submit" class="btn btn--acento">Calcular</button>
+        <!-- Exportar: reenvía el mismo rango a la ruta de exportación -->
+        <button type="submit" class="btn btn--claro" formaction="{{ url_for('reportes.exportar') }}">
+          Exportar a Excel
+        </button>
+      </div>
+    </form>
+  </section>
+  <!-- ============== Fin Filtro ============== -->
+
+  <!-- ============== Inicio Resumen de Horas ============== -->
+  <section class="rejilla rejilla--3 mt-2">
+    <div class="tarjeta kpi kpi--azul">
+      <span class="kpi__valor">{{ resumen.horas_ordinarias }}</span>
+      <span class="kpi__etiqueta">Horas ordinarias</span>
+    </div>
+    <div class="tarjeta kpi">
+      <span class="kpi__valor">{{ resumen.horas_extras }}</span>
+      <span class="kpi__etiqueta">Horas extras (>42)</span>
+    </div>
+    <div class="tarjeta kpi kpi--verde">
+      <span class="kpi__valor">{{ resumen.horas_nocturnas }}</span>
+      <span class="kpi__etiqueta">Horas nocturnas</span>
+    </div>
+  </section>
+
+  <section class="rejilla rejilla--2 mt-1">
+    <div class="tarjeta kpi">
+      <span class="kpi__valor">{{ resumen.horas_dominical_festivo }}</span>
+      <span class="kpi__etiqueta">Horas dominical / festivo</span>
+    </div>
+    <div class="tarjeta kpi kpi--azul">
+      <span class="kpi__valor">$ {{ "{:,.0f}".format(resumen.valor_estimado) }}</span>
+      <span class="kpi__etiqueta">Valor estimado (informativo)</span>
+    </div>
+  </section>
+  <p class="tenue mt-1">
+    Los valores son una estimación basada en los parámetros de Configuración
+    (valor hora y recargos). Verifique siempre contra la normatividad vigente.
+  </p>
+  <!-- ============== Fin Resumen de Horas ============== -->
+
+  <!-- ============== Inicio Detalle de Registros ============== -->
+  <section class="mt-2">
+    <h2>Detalle de registros</h2>
+    <div class="tabla--envuelta">
+      <table class="tabla">
+        <thead>
+          <tr><th>Fecha</th><th>Documento</th><th>Trabajador</th><th>Entrada</th><th>Salida</th><th>Sitio</th><th>Fotos</th><th>Ubicación</th></tr>
+        </thead>
+        <tbody>
+          {% for r in registros %}
+          <tr>
+            <td>{{ r.fecha }}</td>
+            <td>{{ r.documento }}</td>
+            <td>{{ r.nombres }} {{ r.apellidos }}</td>
+            <td>{{ r.hora_entrada or '—' }}</td>
+            <td>{{ r.hora_salida or '—' }}</td>
+            <td>
+              {% if r.sitio_entrada or r.sitio_salida %}
+                <span class="insignia insignia--ok">{{ r.sitio_entrada or r.sitio_salida }}</span>
+              {% else %}<span class="tenue">—</span>{% endif %}
+            </td>
+            <td>
+              <div class="flex">
+                {% if r.foto_entrada %}
+                  <a href="{{ url_for('foto', nombre=r.foto_entrada) }}" target="_blank" title="Foto entrada">
+                    <img src="{{ url_for('foto', nombre=r.foto_entrada) }}" style="width:34px;height:34px;border-radius:6px;object-fit:cover;">
+                  </a>
+                {% endif %}
+                {% if r.foto_salida %}
+                  <a href="{{ url_for('foto', nombre=r.foto_salida) }}" target="_blank" title="Foto salida">
+                    <img src="{{ url_for('foto', nombre=r.foto_salida) }}" style="width:34px;height:34px;border-radius:6px;object-fit:cover;">
+                  </a>
+                {% endif %}
+                {% if not r.foto_entrada and not r.foto_salida %}<span class="tenue">—</span>{% endif %}
+              </div>
+            </td>
+            <td>
+              {% if r.lat_entrada %}
+                <a href="https://www.google.com/maps?q={{ r.lat_entrada }},{{ r.lon_entrada }}"
+                   target="_blank" class="insignia insignia--info">Ver mapa</a>
+              {% else %}<span class="tenue">—</span>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="tenue">No hay registros en el rango seleccionado.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <!-- ============== Fin Detalle de Registros ============== -->
+
+</main>
+{% endblock %}
+
+{% block js %}
+  <script src="{{ url_for('static', filename='js/reportes.js') }}"></script>
+{% endblock %}

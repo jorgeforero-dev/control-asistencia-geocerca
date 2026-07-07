@@ -1,0 +1,142 @@
+{# =========================================================== #}
+{# Plantilla: index.html  (KIOSKO PÚBLICO DE MARCACIÓN)         #}
+{# Función: Pantalla que ven los TRABAJADORES (sin contraseña). #}
+{#   - Escriben su documento.                                   #}
+{#   - Al presionar "Marcar", el sistema toma la foto solo.     #}
+{#   - Captura la ubicación (GPS) del dispositivo.              #}
+{#   - Envía todo y registra entrada o salida.                  #}
+{# Variables: kiosko = { exigir_foto, validar_ubicacion }       #}
+{# Nota: cámara y ubicación requieren HTTPS en producción       #}
+{#       (en localhost funcionan para pruebas).                 #}
+{# =========================================================== #}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marcar asistencia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/kiosko.css') }}">
+
+  <style>
+    :root {
+      /* Modifica estos valores según la identidad de la empresa */
+      --color-primario: #1e293b;   /* Color de fondo del encabezado u oscuros */
+      --color-acento: #0f766e;     /* Color del botón principal (ej: Verde militar/azul estratégico) */
+      --color-texto-header: #ffffff;
+    }
+
+    /* Inyecciones rápidas de prueba (se pueden retirar al definir el CSS final) */
+    .kiosko-top {
+      background-color: var(--color-primario) !important;
+    }
+    .kiosko-top__marca, .kiosko-top__admin {
+      color: var(--color-texto-header) !important;
+    }
+    .btn--acento {
+      background-color: var(--color-acento) !important;
+      border-color: var(--color-acento) !important;
+    }
+
+    /* Estilos para el contenedor del logo */
+    .kiosko-logo-contenedor {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .kiosko-logo {
+      max-height: 60px; /* Ajusta la altura ideal de tu logo */
+      width: auto;
+      object-fit: contain;
+    }
+    .kiosko-top__marca {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .kiosko-logo-mini {
+      max-height: 24px;
+      width: auto;
+    }
+
+    /* --- ESTILOS PARA EL FOOTER --- */
+    .kiosko-footer {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #64748b; /* Gris suave para que no compita visualmente */
+      border-top: 1px solid #e2e8f0;
+    }
+    .kiosko-footer a {
+      color: var(--color-acento);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .kiosko-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="kiosko-top">
+    <div class="kiosko-top__marca">
+  <img src="{{ url_for('static', filename='img/logo.png') }}" class="kiosko-logo-mini" alt="Logo">
+  Control de Asistencia
+</div>
+    <a href="{{ url_for('auth.login') }}" class="kiosko-top__admin">Administrador</a>
+  </header>
+
+  <main class="kiosko-wrap"
+        id="kiosko-config"
+        data-exigir-foto="{{ '1' if kiosko.exigir_foto else '0' }}"
+        data-validar-ubicacion="{{ '1' if kiosko.validar_ubicacion else '0' }}"
+        data-url-marcar="{{ url_for('kiosko.marcar_kiosko') }}">
+    <section class="kiosko-card">
+
+      <div class="kiosko-logo-contenedor">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" class="kiosko-logo" alt="Logo Empresa">
+      </div>
+
+      <h1 class="kiosko-titulo">Registrar entrada o salida</h1>
+      <p class="kiosko-sub">Escriba su documento y presione Marcar. La foto se toma automáticamente.</p>
+
+      <div id="reloj" class="kiosko-reloj">--:--:--</div>
+
+      <div class="campo">
+        <label for="documento">Número de documento</label>
+        <input id="documento" inputmode="numeric" autocomplete="off"
+               placeholder="Ej: 1012345678">
+      </div>
+
+      <!-- La cámara permanece en vivo; la foto se captura sola al marcar -->
+      <div class="kiosko-camara">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="lienzo" class="oculto"></canvas>
+        <img id="foto-previa" class="oculto" alt="Foto capturada">
+      </div>
+
+      <div id="estado-ubicacion" class="kiosko-estado">
+        Ubicación: <span id="ubic-txt">esperando…</span>
+      </div>
+
+      <!-- Un solo botón: Marcar (captura la foto en ese instante) -->
+      <div class="kiosko-botones">
+        <button id="btn-marcar" class="btn btn--acento btn--bloque" disabled>
+          Marcar
+        </button>
+      </div>
+
+      <div id="resultado" class="kiosko-resultado oculto"></div>
+
+    </section>
+  </main>
+
+  <footer class="kiosko-footer">
+    <p>&copy; 2026 Todos los derechos reservados.</p>
+    <p>Desarrollado con &hearts; por <a href="#" target="_blank">Jorge Luis Forero Herrera</a></p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/kiosko.js') }}"></script>
+</body>
+</html>

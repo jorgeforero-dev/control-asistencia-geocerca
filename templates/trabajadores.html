@@ -1,0 +1,144 @@
+{# =========================================================== #}
+{# Plantilla: trabajadores.html                                 #}
+{# Función: Listado y gestión del personal. Incluye formulario  #}
+{#          de alta, tabla con fotos y panel de edición.        #}
+{# Variables: trabajadores = lista de dicts.                    #}
+{# =========================================================== #}
+{% extends "base.html" %}
+{% block titulo %}Trabajadores · Control de Asistencia{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+
+  <!-- ============== Inicio Encabezado ============== -->
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Trabajadores</h1>
+      <p>{{ trabajadores|length }} trabajador(es) activo(s)</p>
+    </div>
+  </div>
+  <!-- ============== Fin Encabezado ============== -->
+
+  <!-- ============== Inicio Carga Masiva por Excel ============== -->
+  <section class="tarjeta">
+    <div class="flex-entre">
+      <h2>Carga masiva por Excel</h2>
+      <a href="{{ url_for('trabajadores.descargar_plantilla') }}" class="btn btn--claro btn--mini">
+        Descargar plantilla
+      </a>
+    </div>
+    <p class="tenue">
+      Descargue la plantilla, llénela con sus trabajadores (una fila por persona)
+      y súbala aquí. Los documentos ya existentes se omiten automáticamente.
+    </p>
+    <form method="POST" action="{{ url_for('trabajadores.importar') }}"
+          enctype="multipart/form-data" class="flex">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="file" name="archivo_excel" accept=".xlsx" required
+             style="flex:1;padding:.5rem;border:1px solid var(--color-borde);border-radius:8px;">
+      <button type="submit" class="btn btn--acento">Importar</button>
+    </form>
+  </section>
+  <!-- ============== Fin Carga Masiva por Excel ============== -->
+
+  <!-- ============== Inicio Formulario de Alta ============== -->
+  <section class="tarjeta">
+    <h2>Registrar nuevo trabajador</h2>
+    <!-- enctype necesario para subir la fotografía -->
+    <form method="POST" action="{{ url_for('trabajadores.crear') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fila-campos">
+        <div class="campo"><label>Documento</label><input name="documento" required></div>
+        <div class="campo"><label>Nombres</label><input name="nombres" required></div>
+        <div class="campo"><label>Apellidos</label><input name="apellidos" required></div>
+        <div class="campo"><label>Cargo</label><input name="cargo"></div>
+        <div class="campo"><label>Área</label><input name="area"></div>
+        <div class="campo"><label>Turno</label><input name="turno"></div>
+        <div class="campo"><label>Fotografía</label><input type="file" name="foto" accept="image/*"></div>
+      </div>
+      <button type="submit" class="btn btn--acento">Guardar trabajador</button>
+    </form>
+  </section>
+  <!-- ============== Fin Formulario de Alta ============== -->
+
+  <!-- ============== Inicio Panel de Edición (oculto por defecto) ============== -->
+  <section id="panel-edicion" class="tarjeta mt-2 oculto">
+    <div class="flex-entre">
+      <h2>Editar trabajador</h2>
+      <button id="cerrar-edicion" class="btn btn--claro btn--mini">Cerrar</button>
+    </div>
+    <form id="form-edicion" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="fila-campos">
+        <div class="campo"><label>Nombres</label><input name="nombres" required></div>
+        <div class="campo"><label>Apellidos</label><input name="apellidos" required></div>
+        <div class="campo"><label>Cargo</label><input name="cargo"></div>
+        <div class="campo"><label>Área</label><input name="area"></div>
+        <div class="campo"><label>Turno</label><input name="turno"></div>
+        <div class="campo"><label>Cambiar fotografía</label><input type="file" name="foto" accept="image/*"></div>
+      </div>
+      <button type="submit" class="btn btn--acento">Actualizar</button>
+    </form>
+  </section>
+  <!-- ============== Fin Panel de Edición ============== -->
+
+  <!-- ============== Inicio Tabla de Trabajadores ============== -->
+  <section class="mt-2">
+    <h2>Listado</h2>
+    <div class="tabla--envuelta">
+      <table class="tabla">
+        <thead>
+          <tr><th>Foto</th><th>Documento</th><th>Nombre</th><th>Cargo</th><th>Área</th><th>Turno</th><th>Acciones</th></tr>
+        </thead>
+        <tbody>
+          {% for t in trabajadores %}
+          <tr>
+            <td>
+              {% if t.foto %}
+                <img src="{{ url_for('foto', nombre=t.foto) }}" alt="foto"
+                     style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ t.documento }}</td>
+            <td>{{ t.nombres }} {{ t.apellidos }}</td>
+            <td>{{ t.cargo or '—' }}</td>
+            <td>{{ t.area or '—' }}</td>
+            <td>{{ t.turno or '—' }}</td>
+            <td>
+              <div class="flex">
+                <!-- Botón editar: lleva los datos en atributos data-* -->
+                <button class="btn btn--claro btn--mini btn-editar"
+                        data-id="{{ t.id }}"
+                        data-nombres="{{ t.nombres }}"
+                        data-apellidos="{{ t.apellidos }}"
+                        data-cargo="{{ t.cargo or '' }}"
+                        data-area="{{ t.area or '' }}"
+                        data-turno="{{ t.turno or '' }}">Editar</button>
+
+                {% if session.get('rol') == 'admin' %}
+                <!-- Baja lógica con confirmación -->
+                <form method="POST" action="{{ url_for('trabajadores.baja', tid=t.id) }}"
+                      data-confirmar="¿Dar de baja a este trabajador?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="btn btn--peligro btn--mini">Baja</button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="tenue">No hay trabajadores registrados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <!-- ============== Fin Tabla de Trabajadores ============== -->
+
+</main>
+{% endblock %}
+
+{# JS específico del módulo de trabajadores #}
+{% block js %}
+  <script src="{{ url_for('static', filename='js/trabajadores.js') }}"></script>
+{% endblock %}

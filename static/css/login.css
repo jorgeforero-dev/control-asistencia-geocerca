@@ -1,0 +1,66 @@
+/* ===========================================================
+   Archivo: static/css/login.css
+   Función: Estilos EXCLUSIVOS de la pantalla de inicio de sesión.
+   =========================================================== */
+
+.login-pantalla {
+  min-height: 100vh; 
+  display: grid; 
+  place-items: center;
+  
+  /* --- CAMBIO: Imagen de fondo institucional adaptativa --- */
+  background-image: url('../img/Fondo Administrador.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  
+  padding: 1.5rem;
+}
+
+.login-tarjeta {
+  width: 100%; 
+  max-width: 380px; 
+  background: #fff;
+  border-radius: 14px; 
+  box-shadow: 0 18px 50px rgba(0,0,0,.25);
+  padding: 2rem 1.8rem; 
+  text-align: center;
+}
+
+/* --- AJUSTE DE CONTENEDOR DE LOGO --- */
+.logo-contenedor {
+  text-align: center;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* --- AJUSTE DE LA IMAGEN DEL LOGO --- */
+.logo-login {
+  max-height: 70px; /* Altura ideal y prudente para la tarjeta de login */
+  width: auto;
+  object-fit: contain;
+}
+
+.login-tarjeta h1 { 
+  font-size: 1.3rem; 
+}
+
+.login-tarjeta .sub { 
+  color: var(--color-tenue); 
+  font-size: .9rem; 
+  margin-bottom: 1.4rem; 
+}
+
+.login-tarjeta form { 
+  text-align: left; 
+}
+
+.login-tarjeta .ayuda { 
+  font-size: .78rem; 
+  color: var(--color-tenue); 
+  margin-top: 1rem; 
+  text-align: center; 
+}

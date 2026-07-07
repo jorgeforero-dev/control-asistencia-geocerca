@@ -1,0 +1,45 @@
+{# =========================================================== #}
+{# Plantilla: auditoria.html                                    #}
+{# Función: Muestra la traza de acciones del sistema (solo admin).#}
+{# Variables: trazas = lista de dicts.                          #}
+{# =========================================================== #}
+{% extends "base.html" %}
+{% block titulo %}Auditoría · Control de Asistencia{% endblock %}
+
+{% block contenido %}
+<main class="contenedor">
+
+  <!-- ============== Inicio Encabezado ============== -->
+  <div class="encabezado-pagina">
+    <div>
+      <h1>Auditoría</h1>
+      <p>Últimas {{ trazas|length }} acciones registradas</p>
+    </div>
+  </div>
+  <!-- ============== Fin Encabezado ============== -->
+
+  <!-- ============== Inicio Tabla de Trazas ============== -->
+  <section class="tabla--envuelta">
+    <table class="tabla">
+      <thead>
+        <tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th><th>IP</th></tr>
+      </thead>
+      <tbody>
+        {% for t in trazas %}
+        <tr>
+          <td>{{ t.fecha }}</td>
+          <td>{{ t.usuario }}</td>
+          <td><span class="insignia insignia--info">{{ t.accion }}</span></td>
+          <td>{{ t.detalle }}</td>
+          <td class="tenue">{{ t.ip }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="tenue">Sin registros de auditoría.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+  <!-- ============== Fin Tabla de Trazas ============== -->
+
+</main>
+{% endblock %}
